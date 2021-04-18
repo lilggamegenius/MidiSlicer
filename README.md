@@ -1,6 +1,6 @@
 # MidiEditor
 
-Edit MIDI files to other scales, modes and harmonies to obtain new sonorities (more than 970 scales / modes included). Follow only these few steps:
+Edit MIDI files to other scales, modes and harmonies to obtain new sonorities (more than 70 scales / modes included). Follow only these few steps:
  * Open a MIDI file,
  * Choose the original tonic and scale (for instance C Major),
  * Choose the new destination tonic and scale (for instance C Natural Minor),
