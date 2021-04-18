@@ -159,10 +159,34 @@
 			}
 		}
 
-		/// <summary>
-		/// Indicates the duration of the MIDI file as a <see cref="TimeSpan"/>
-		/// </summary>
-		public TimeSpan Duration {
+        /// <summary>
+        /// Indicates the notes frequency of the MIDI file
+        /// </summary>
+        public Dictionary<int, int> NotesFrequency
+        {
+            get
+            {
+                Dictionary<int, int> notesFreqTotal = new Dictionary<int, int>();
+                for (int i = 0; i < 12; i++)
+                    notesFreqTotal.Add(i, 0);
+
+                if (0 == Tracks.Count)
+                    return notesFreqTotal;
+                
+                foreach (MidiSequence track in Tracks)
+                {
+                    Dictionary<int, int> notesFreqTrack = track.NotesFrequency;
+                    for (int i = 0; i < 12; i++)
+                        notesFreqTotal[i] += notesFreqTrack[i];
+                }
+                return notesFreqTotal;
+            }
+        }
+
+        /// <summary>
+        /// Indicates the duration of the MIDI file as a <see cref="TimeSpan"/>
+        /// </summary>
+        public TimeSpan Duration {
 			get {
 				if (0 == Tracks.Count)
 					return TimeSpan.Zero;
@@ -270,6 +294,7 @@
 				return result;
 			}
 		}
+
 		/// <summary>
 		/// Transposes the notes in a file, optionally wrapping the note values
 		/// </summary>
@@ -284,14 +309,30 @@
 				result.Tracks.Add(track.Transpose(noteAdjust, wrap,noDrums));
 			return result;
 		}
-		/// <summary>
-		/// Stretches or compresses the MIDI file events
-		/// </summary>
-		/// <remarks>If <paramref name="adjustTempo"/> is false this will change the playback speed of the MIDI</remarks>
-		/// <param name="diff">The differential for the size. 1 is the same length, .5 would be half the length and 2 would be twice the length</param>
-		/// <param name="adjustTempo">Indicates whether or not the tempo should be adjusted to compensate</param>
-		/// <returns>A new MIDI file that is stretched the specified amount</returns>
-		public MidiFile Stretch(double diff,bool adjustTempo=false)
+
+        /// <summary>
+        /// Transform the notes in a file, optionally wrapping the note values
+        /// </summary>
+        /// <param name="table">The notes transformation table</param>
+        /// <param name="wrap">True if out of range notes are wrapped, false if they are to be clipped</param>
+        /// <param name="noDrums">True if drum/percussion notes are to be left alone, otherwise false</param>
+        /// <returns>A new MIDI file with the notes transposed</returns>
+        public MidiFile Transform(int[] table, bool wrap = false, bool noDrums = true, bool invert = false, int noteInversionRef = 48)
+        {
+            var result = new MidiFile(Type, TimeBase);
+            foreach (var track in Tracks)
+                result.Tracks.Add(track.Transform(table, wrap, noDrums, invert, noteInversionRef));
+            return result;
+        }
+
+        /// <summary>
+        /// Stretches or compresses the MIDI file events
+        /// </summary>
+        /// <remarks>If <paramref name="adjustTempo"/> is false this will change the playback speed of the MIDI</remarks>
+        /// <param name="diff">The differential for the size. 1 is the same length, .5 would be half the length and 2 would be twice the length</param>
+        /// <param name="adjustTempo">Indicates whether or not the tempo should be adjusted to compensate</param>
+        /// <returns>A new MIDI file that is stretched the specified amount</returns>
+        public MidiFile Stretch(double diff,bool adjustTempo=false)
 		{
 			var result = new MidiFile(Type, TimeBase);
 			foreach(var trk in Tracks)
@@ -503,14 +544,23 @@
 		{
 			chunk = default(KeyValuePair<string, byte[]>);
 			var buf = new byte[4];
-			if (4 != stream.Read(buf, 0, 4)) return false;
+
+			if (4 != stream.Read(buf, 0, 4))
+                return false;
+
 			var name = Encoding.ASCII.GetString(buf);
-			if (4 != stream.Read(buf, 0, 4)) throw new EndOfStreamException();
+			if (4 != stream.Read(buf, 0, 4))
+                throw new EndOfStreamException();
+
 			var len = BitConverter.ToInt32(buf, 0);
 			if (BitConverter.IsLittleEndian)
 				len = MidiUtility.Swap(len);
+
 			buf = new byte[len];
-			if(len!=stream.Read(buf,0,len)) throw new EndOfStreamException();
+            if (len != stream.Read(buf, 0, len))
+                return false;
+                /*throw new EndOfStreamException();*/
+
 			chunk = new KeyValuePair<string, byte[]>(name, buf);
 			return true;
 		}
