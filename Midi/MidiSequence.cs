@@ -886,6 +886,7 @@
 			
 			return result;
 		}
+
 		/// <summary>
 		/// Transposes the notes in a sequence, optionally wrapping the note values
 		/// </summary>
@@ -905,8 +906,9 @@
 						if (noDrums && 9 == ev.Message.Channel)
 							goto default;
 						var no = ev.Message as MidiMessageWord;
-						n = no.Data1 + noteAdjust;
-						if(0>n || 127<n)
+                        n = no.Data1 + noteAdjust;
+
+                        if (0>n || 127<n)
 						{
 							if (!wrap)
 								continue;
@@ -922,8 +924,9 @@
 						if (noDrums && 9 == ev.Message.Channel)
 							goto default;
 						no = ev.Message as MidiMessageWord;
-						n = no.Data1 + noteAdjust;
-						if (0 > n || 127 < n)
+                        n = no.Data1 + noteAdjust;
+
+                        if (0 > n || 127 < n)
 						{
 							if (!wrap)
 								continue;
@@ -949,14 +952,125 @@
 			}
 			return result;
 		}
+
 		/// <summary>
-		/// Stretches or compresses the MIDI sequence events
+		/// Transposes the notes in a sequence, optionally wrapping the note values
 		/// </summary>
-		/// <remarks>If <paramref name="adjustTempo"/> is false this will change the playback speed of the MIDI</remarks>
-		/// <param name="diff">The differential for the size. 1 is the same length, .5 would be half the length and 2 would be twice the length</param>
-		/// <param name="adjustTempo">Indicates whether or not the tempo should be adjusted to compensate</param>
-		/// <returns>A new MIDI sequence that is stretched the specified amount</returns>
-		public MidiSequence Stretch(double diff,bool adjustTempo=false)
+		/// <param name="table">The notes transformation table</param>
+		/// <param name="wrap">True if out of range notes are wrapped, false if they are to be clipped</param>
+		/// <param name="noDrums">True if drums are to be skipped, otherwise false</param>
+		/// <param name="invert">True if inversion mode, otherwise false</param>
+		/// <param name="noteInversionRef">Reference note for inversion mode</param>
+		/// <returns>A new MIDI sequence with the notes transposed</returns>
+		public MidiSequence Transform(int[] table, bool wrap = false, bool noDrums = true, bool invert = false, int noteInversionRef = 48)
+        {
+            var events = new List<MidiEvent>(Events.Count);
+            foreach (var ev in AbsoluteEvents)
+            {
+                int n;
+                int diff = 0;
+                switch (ev.Message.Status & 0xF0)
+                {
+                    case 0x80:
+                        if (noDrums && 9 == ev.Message.Channel)
+                            goto default;
+                        var no = ev.Message as MidiMessageWord;
+
+                        // apply transformation
+                        diff = table[no.Data1 % 12];
+                        
+                        if (invert)
+                            n = getInvertedNote(no.Data1, diff, noteInversionRef);
+                        else
+                            n = no.Data1 + diff;
+
+                        if (0 > n || 127 < n)
+                        {
+                            if (!wrap)
+                                continue;
+                            if (0 > n)
+                                n += 127;
+                            else
+                                n -= 127;
+                        }
+                        no = new MidiMessageNoteOff(unchecked((byte)n), no.Data2, no.Channel);
+                        events.Add(new MidiEvent(ev.Position, no));
+                        break;
+                    case 0x90:
+                        if (noDrums && 9 == ev.Message.Channel)
+                            goto default;
+                        no = ev.Message as MidiMessageWord;
+
+                        // apply transformation
+                        diff = table[no.Data1 % 12];
+
+                        if (invert)
+                            n = getInvertedNote(no.Data1, diff, noteInversionRef);
+                        else
+                            n = no.Data1 + diff;
+
+                        if (0 > n || 127 < n)
+                        {
+                            if (!wrap)
+                                continue;
+                            if (0 > n)
+                                n += 127;
+                            else
+                                n -= 127;
+                        }
+                        no = new MidiMessageNoteOn(unchecked((byte)n), no.Data2, no.Channel);
+                        events.Add(new MidiEvent(ev.Position, no));
+                        break;
+                    default:
+                        events.Add(ev.Clone());
+                        break;
+                }
+            }
+            var result = new MidiSequence();
+            var last = 0;
+            foreach (var ev in events)
+            {
+                result.Events.Add(new MidiEvent(ev.Position - last, ev.Message));
+                last = ev.Position;
+            }
+            return result;
+        }
+
+        private int getInvertedNote(int noteSrc, int diff, int noteInversionRef)
+        {
+            int noteNew = noteSrc;
+
+            // compute distances between note and reference note
+            int distToRefSrc = noteSrc - noteInversionRef;
+
+            // get correct inverted octave
+            for (int indexOctave = -6; indexOctave < 6; indexOctave++)
+            {
+                noteNew = noteSrc + diff + 12 * indexOctave;
+                if (noteNew < 0 || noteNew > 127)
+                    continue;
+
+                int distToRefNew = noteNew - noteInversionRef;
+
+                int distOctaveSrc = (int)(Math.Sign(distToRefSrc) * Math.Ceiling(Math.Abs(distToRefSrc) / 12.0));
+                int distOctaveNew = (int)(Math.Sign(distToRefNew) * Math.Ceiling(Math.Abs(distToRefNew) / 12.0));
+
+                if (distOctaveNew == -distOctaveSrc)
+                    break;
+            }
+
+            return noteNew;
+        }
+
+
+        /// <summary>
+        /// Stretches or compresses the MIDI sequence events
+        /// </summary>
+        /// <remarks>If <paramref name="adjustTempo"/> is false this will change the playback speed of the MIDI</remarks>
+        /// <param name="diff">The differential for the size. 1 is the same length, .5 would be half the length and 2 would be twice the length</param>
+        /// <param name="adjustTempo">Indicates whether or not the tempo should be adjusted to compensate</param>
+        /// <returns>A new MIDI sequence that is stretched the specified amount</returns>
+        public MidiSequence Stretch(double diff,bool adjustTempo=false)
 		{
 			var result = new MidiSequence();
 			if (!adjustTempo)
@@ -1267,10 +1381,48 @@
 				}
 			}
 		}
-		/// <summary>
-		/// Indicates the length of the MIDI sequence
-		/// </summary>
-		public int Length {
+
+        /// <summary>
+        /// Indicates the notes occurences frequency
+        /// </summary>
+        public Dictionary<int, int> NotesFrequency
+        {
+            get
+            {
+                Dictionary<int, int> notesFreq = new Dictionary<int, int>();
+                for (int i = 0; i < 12; i++)
+                    notesFreq.Add(i, 0);
+
+                //var events = new List<MidiEvent>(Events.Count);
+                foreach (MidiEvent ev in AbsoluteEvents)
+                {
+                    int note;
+                    switch (ev.Message.Status & 0xF0)
+                    {
+                        case 0x80:
+                        case 0x90:
+                            if (true/* no drums */ && 9 == ev.Message.Channel)
+                                goto default;
+                            var no = ev.Message as MidiMessageWord;
+                            //n = no.Data1 + noteAdjust;
+
+                            note = no.Data1 % 12;
+                            notesFreq[note]++;
+
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                return notesFreq;
+            }
+        }
+
+        /// <summary>
+        /// Indicates the length of the MIDI sequence
+        /// </summary>
+        public int Length {
 			get {
 				var l= 0;
 				byte r = 0;
