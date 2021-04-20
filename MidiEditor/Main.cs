@@ -609,11 +609,44 @@ namespace MidiEditor
 
         private void saveFile(string filepath)
         {
-            var mf = _ProcessFile();
+            MidiFile mf = _ProcessFile();
             using (var stm = File.OpenWrite(filepath))
             {
                 stm.SetLength(0);
                 mf.WriteTo(stm);
+            }
+        }
+
+        private void buttonExport_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.Reset();
+            folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
+            folderBrowserDialog.SelectedPath = Path.GetDirectoryName(MidiFileBox.Text);
+
+            DialogResult res = folderBrowserDialog.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                string selectedPath = folderBrowserDialog.SelectedPath;
+                MidiFile mf = _ProcessFile();
+                int selectedTrackIndex = 0;
+                foreach (MidiSequence track in mf.Tracks)
+                {
+                    // export track absolute / relative events to file
+                    string fileName = $"{Path.GetFileNameWithoutExtension(MidiFileBox.Text)} - Track {selectedTrackIndex}";
+                    string filepath = Path.Combine(selectedPath, fileName + ".txt");
+                    string eventsStr = String.Empty;
+
+                    foreach (MidiEvent ev in track.AbsoluteEvents)
+                        eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
+                    eventsStr += Environment.NewLine;
+
+                    foreach (MidiEvent ev in track.Events)
+                        eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
+
+                    File.WriteAllText(filepath, eventsStr);
+                    selectedTrackIndex++;
+                }
             }
         }
 

@@ -886,16 +886,6 @@
 			if(-1<midiEnd) // if we found a midi end track, then add one back after all is done
 				result.Events.Add(new MidiEvent(Math.Max(0,midiEnd-last), new MidiMessageMetaEndOfTrack()));
 
-            //// log absolute / relative events to file
-            //string filepath = "events.txt";
-            //string eventsStr = String.Empty;
-            //foreach (MidiEvent ev in result.AbsoluteEvents)
-            //    eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
-            //eventsStr += Environment.NewLine;
-            //foreach (MidiEvent ev in result.Events)
-            //    eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
-            //File.WriteAllText(filepath, eventsStr);
-
             return result;
 		}
 
