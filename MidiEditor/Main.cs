@@ -307,7 +307,6 @@ namespace MidiEditor
                 comboboxTonicTo.Enabled = false;
                 comboboxScaleTo.SelectedIndex = -1;
                 comboboxScaleTo.Enabled = false;
-                nbNotesInScaleTo_ = 0;
 
                 Visualizer.Sequence = null;
 				Visualizer.Size = VisualizerPanel.Size;
@@ -386,7 +385,7 @@ namespace MidiEditor
                 comboboxInvNoteRefOctave.SelectedIndex = 4; // default
 			}
 
-            
+            nbNotesInScaleTo_ = 0;
             buttonResetTransform.Enabled = false;
         }
 
@@ -1023,10 +1022,12 @@ namespace MidiEditor
         private void resetTranformation(bool resetScaleFrom = true)
         {
             if (resetScaleFrom)
+            {
                 comboboxScaleFrom.SelectedIndex = -1;
-            comboboxScaleTo.SelectedIndex = -1;
+                highlightScaleNotes(null);
+            }
 
-            highlightScaleNotes(null);
+            comboboxScaleTo.SelectedIndex = -1;
             resetTransformNotes();
 
             _dirty = true;
