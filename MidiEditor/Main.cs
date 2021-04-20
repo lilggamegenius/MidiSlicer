@@ -17,6 +17,7 @@ namespace MidiEditor
         string _tracksLabelFormat;
         bool _dirty;
         bool _reseekDirty;
+        bool _isPlaying;
 
         // notes transfomation
         Label[] labelNotes_;
@@ -40,7 +41,9 @@ namespace MidiEditor
 			_processedFile = null;
 			_dirty = true;
 			_reseekDirty = true;
-			_UpdateMidiFile();
+            _isPlaying = false;
+
+            _UpdateMidiFile();
 
             labelNotes_ = new Label[12];
             //labelNotesFrequency_ = new Label[12];
@@ -116,6 +119,8 @@ namespace MidiEditor
 
                 comboboxScaleFrom.Items.Add(scale.Value);
             }
+
+            initComboboxScaleTo();
 
             for (int i = 0; i <= 10; i++)
                 comboboxInvNoteRefOctave.Items.Add(i);
@@ -254,6 +259,8 @@ namespace MidiEditor
         {
             MidiFileBox.Text = filepath;
             _UpdateMidiFile();
+
+            _isPlaying = false;
         }
 
 		void _UpdateMidiFile()
@@ -273,7 +280,8 @@ namespace MidiEditor
 				_file = null;
 				TrackList.Enabled = false;
 				buttonPreview.Enabled = false;
-				UnitsCombo.Enabled = false;
+                buttonExport.Enabled = false;
+                UnitsCombo.Enabled = false;
 				StartCombo.Enabled = false;
 				OffsetUpDown.Enabled = false;
 				LengthUpDown.Enabled = false;
@@ -300,11 +308,12 @@ namespace MidiEditor
                 comboboxTonicTo.Enabled = false;
                 comboboxScaleTo.SelectedIndex = -1;
                 comboboxScaleTo.Enabled = false;
-                nbNotesInScaleTo_ = 0;
 
                 Visualizer.Sequence = null;
 				Visualizer.Size = VisualizerPanel.Size;
-			}
+
+                resetTranformation();
+            }
 			else
 			{
 				MidiFileBox.ForeColor = SystemColors.WindowText;
@@ -325,7 +334,8 @@ namespace MidiEditor
                 TracksLabel.Text = string.Format(_tracksLabelFormat, sig.Numerator, sig.Denominator/*, key*/);
 				TrackList.Enabled = true;
 				buttonPreview.Enabled = true;
-				UnitsCombo.Enabled = true;
+                buttonExport.Enabled = true;
+                UnitsCombo.Enabled = true;
 				StartCombo.Enabled = true;
 				OffsetUpDown.Enabled = true;
 				LengthUpDown.Enabled = true;
@@ -371,12 +381,13 @@ namespace MidiEditor
 				Visualizer.Sequence = MidiSequence.Merge(_file.Tracks);
 				Visualizer.Width = Math.Max(VisualizerPanel.Width,Visualizer.Sequence.Length/4);
 
+                resetTranformation();
                 updateNotesFrequency();
 
                 comboboxInvNoteRefOctave.SelectedIndex = 4; // default
 			}
 
-            resetTranformation();
+            nbNotesInScaleTo_ = 0;
             buttonResetTransform.Enabled = false;
         }
 
@@ -397,7 +408,9 @@ namespace MidiEditor
 				buttonLoad.Enabled = true;
 				OutputComboBox.Enabled = true;
 				buttonPreview.Text = "Preview ♪";
-				return;
+                _isPlaying = false;
+
+                return;
 			}
 			
 			if (null != _play)
@@ -438,8 +451,10 @@ namespace MidiEditor
 			// start it
 			stm.Start();
 
-			// first set the timebase
-			stm.TimeBase = mf.TimeBase;
+            _isPlaying = true;
+
+            // first set the timebase
+            stm.TimeBase = mf.TimeBase;
 			// set up our send complete handler
 			stm.SendComplete += delegate (object s, EventArgs ea)
 			{
@@ -596,11 +611,44 @@ namespace MidiEditor
 
         private void saveFile(string filepath)
         {
-            var mf = _ProcessFile();
+            MidiFile mf = _ProcessFile();
             using (var stm = File.OpenWrite(filepath))
             {
                 stm.SetLength(0);
                 mf.WriteTo(stm);
+            }
+        }
+
+        private void buttonExport_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.Reset();
+            folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
+            folderBrowserDialog.SelectedPath = Path.GetDirectoryName(MidiFileBox.Text);
+
+            DialogResult res = folderBrowserDialog.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                string selectedPath = folderBrowserDialog.SelectedPath;
+                MidiFile mf = _ProcessFile();
+                int selectedTrackIndex = 0;
+                foreach (MidiSequence track in mf.Tracks)
+                {
+                    // export track absolute / relative events to file
+                    string fileName = $"{Path.GetFileNameWithoutExtension(MidiFileBox.Text)} - Track {selectedTrackIndex}";
+                    string filepath = Path.Combine(selectedPath, fileName + ".txt");
+                    string eventsStr = String.Empty;
+
+                    foreach (MidiEvent ev in track.AbsoluteEvents)
+                        eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
+                    eventsStr += Environment.NewLine;
+
+                    foreach (MidiEvent ev in track.Events)
+                        eventsStr += $"{ev.Position} - {ev.Message.ToString()}" + Environment.NewLine;
+
+                    File.WriteAllText(filepath, eventsStr);
+                    selectedTrackIndex++;
+                }
             }
         }
 
@@ -922,16 +970,10 @@ namespace MidiEditor
             comboboxTonicTo.SelectedIndex = maxFreqValue;
             comboboxInvNoteRef.SelectedIndex = maxFreqValue;
             updateGUI();
-
-            // TODO: try to guess scale
         }
 
         private void updateGUI()
         {
-            comboboxScaleTo.Enabled = (comboboxScaleFrom.SelectedIndex >= 0);
-            if (comboboxScaleFrom.SelectedIndex < 0)
-                comboboxScaleTo.SelectedIndex = -1;
-
             // get tonic value
             string tonicSrc = comboboxTonicFrom.Items[comboboxTonicFrom.SelectedIndex] as string;
             int tonicSrcValue = Notes.NotesValuesDict[tonicSrc];
@@ -947,7 +989,7 @@ namespace MidiEditor
             }
 
             // update inversion panel if inversion selected
-            if (comboboxScaleTo.Enabled && comboboxScaleTo.Items.Count > 0 && comboboxScaleTo.SelectedIndex >= 0)
+            if (comboboxScaleTo.Items.Count > 0 && comboboxScaleTo.SelectedIndex >= 0)
             {
                 string selectedScaleTo = comboboxScaleTo.Items[comboboxScaleTo.SelectedIndex] as string;
                 string selectedScaleToId = Scales.IdFromScaleName(selectedScaleTo);
@@ -956,6 +998,17 @@ namespace MidiEditor
             }
             else
                 panelInvRefNote.Enabled = false;
+        }
+
+        private void initComboboxScaleTo()
+        {
+            // set default transformation scales
+            if (comboboxScaleFrom.SelectedIndex < 0)
+            {
+                comboboxScaleTo.Items.Clear();
+                comboboxScaleTo.Items.Add("Negative Harmony");
+                comboboxScaleTo.Items.Add("Random");
+            }
         }
 
         private void updateComboboxScaleTo(int nbNotesInScale)
@@ -1004,10 +1057,12 @@ namespace MidiEditor
         private void resetTranformation(bool resetScaleFrom = true)
         {
             if (resetScaleFrom)
+            {
                 comboboxScaleFrom.SelectedIndex = -1;
-            comboboxScaleTo.SelectedIndex = -1;
+                highlightScaleNotes(null);
+            }
 
-            highlightScaleNotes(null);
+            comboboxScaleTo.SelectedIndex = -1;
             resetTransformNotes();
 
             _dirty = true;
@@ -1074,28 +1129,33 @@ namespace MidiEditor
                 return;
             updateGUI();
 
-            if (comboboxScaleFrom.SelectedIndex < 0)
-                return;
+            if ((sender as ComboBox) == comboboxScaleFrom && comboboxScaleFrom.SelectedIndex < 0)
+                initComboboxScaleTo();
 
             // compute source scale notes values
 
             string tonicSrc = comboboxTonicFrom.Items[comboboxTonicFrom.SelectedIndex] as string;
             int tonicSrcValue = Notes.NotesValuesDict[tonicSrc];
 
-            string scaleSrcName = comboboxScaleFrom.Items[comboboxScaleFrom.SelectedIndex] as string;
-            string scaleSrcId = Scales.IdFromScaleName(scaleSrcName);
-            int[] scaleSrcValues = Scales.GetScaleValues(scaleSrcId);
-            int nbNotesInScale = scaleSrcValues.Length;
+            int[] scaleSrcNotesValues = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }; // all notes
+            int nbNotesInScale = 12;
+            if (comboboxScaleFrom.SelectedIndex >= 0)
+            {
+                string scaleSrcName = comboboxScaleFrom.Items[comboboxScaleFrom.SelectedIndex] as string;
+                string scaleSrcId = Scales.IdFromScaleName(scaleSrcName);
+                int[] scaleSrcValues = Scales.GetScaleValues(scaleSrcId);
+                nbNotesInScale = scaleSrcValues.Length;
 
-            // update combo box scale to with scales with same nb. notes
-            updateComboboxScaleTo(nbNotesInScale);
+                // update combo box scale to with scales with same nb. notes
+                updateComboboxScaleTo(nbNotesInScale);
 
-            int[] scaleSrcNotesValues = new int[nbNotesInScale];
-            for (int i = 0; i < nbNotesInScale; i++)
-                scaleSrcNotesValues[i] = (tonicSrcValue + scaleSrcValues[i]) % 12;
+                scaleSrcNotesValues = new int[nbNotesInScale];
+                for (int i = 0; i < nbNotesInScale; i++)
+                    scaleSrcNotesValues[i] = (tonicSrcValue + scaleSrcValues[i]) % 12;
 
-            // highlight scale notes
-            highlightScaleNotes(scaleSrcNotesValues);
+                // highlight scale notes
+                highlightScaleNotes(scaleSrcNotesValues);
+            }
 
             // new notes
 
@@ -1249,6 +1309,9 @@ namespace MidiEditor
 
         private void Main_DragEnter(object sender, DragEventArgs e)
         {
+            if (_isPlaying)
+                return;
+
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (!MidiFile(files))
                 return;
@@ -1259,6 +1322,9 @@ namespace MidiEditor
 
         private void Main_DragDrop(object sender, DragEventArgs e)
         {
+            if (_isPlaying)
+                return;
+
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (!MidiFile(files))
                 return;

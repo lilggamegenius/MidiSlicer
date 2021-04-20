@@ -60,14 +60,18 @@ namespace MidiEditor
             //{ "8mahur",        new float[]{ 0, 2, 3.5, 5, 7, 9, 10, 11} },
             //{ "8mehayar",      new float[]{ 0, 1.5, 3, 5, 7, 8, 8.5, 10} },
             //{ "8mustaar",      new float[]{ 0, 1.5, 2.5, 3.5, 5.5, 6.5, 8.5, 10.5} },
+            //{ "8tet",          new float[]{ 0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5} },
             //
             //// 7 notes with quarter tones
             //{ "7hijaz",        new float[]{ 0, 1, 4, 5, 7, 8.5, 10} },
             //{ "7rast",         new float[]{ 0, 2, 3.5, 5, 7, 9, 10.5} },
             //{ "7bayati",       new float[]{ 0, 1.5, 3, 5, 7, 8, 10} },
             //{ "7hardino",      new float[]{ 0, 1.5, 4, 5, 7, 8.5, 11} },
-            //{ "7sikah_baladi", new float[]{ 0, 1.5, 3.5, 5, 7, 8.5, 10.5} }
-        };
+            //{ "7sikah_baladi", new float[]{ 0, 1.5, 3.5, 5, 7, 8.5, 10.5} },
+
+            // 5 notes with quarter tones
+            //{  "5tet_approx",  new float[]{ 0, 2.5, 5, 7, 9.5 } };
+    };
 
         public static Dictionary<string, string> ScalesValuesDict = new Dictionary<string, string>()
         {
@@ -209,7 +213,7 @@ namespace MidiEditor
             //
             //{ "7bayati,1,diff:7major_nat;6", "Bayati" },
             //{ "7hardino,1,diff:7major_nat;1", "Hardino" },
-            //{ "7sikah_baladi,1,diff:7major_nat;1", "Sikah baladi" },
+            //{ "7sikah_baladi,1,diff:7major_nat;1", "Sikah baladi / 7-TET (Approximation)" },
             //
             //{ "7sikah_baladi,6,diff:7major_nat;1", "Neutral" }
 

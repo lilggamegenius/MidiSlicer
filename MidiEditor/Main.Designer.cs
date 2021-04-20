@@ -66,6 +66,7 @@
             this.VisualizerPanel = new System.Windows.Forms.Panel();
             this.Visualizer = new M.MidiVisualizer();
             this.panelNotes = new System.Windows.Forms.Panel();
+            this.buttonResetTransform = new System.Windows.Forms.Button();
             this.panelInvRefNote = new System.Windows.Forms.Panel();
             this.comboboxInvNoteRef = new System.Windows.Forms.ComboBox();
             this.labelInvNoteRef = new System.Windows.Forms.Label();
@@ -125,7 +126,7 @@
             this.labelNote1 = new System.Windows.Forms.Label();
             this.labelNote0 = new System.Windows.Forms.Label();
             this.buttonSaveAll = new System.Windows.Forms.Button();
-            this.buttonResetTransform = new System.Windows.Forms.Button();
+            this.buttonExport = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.OffsetUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LengthUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.StretchUpDown)).BeginInit();
@@ -677,6 +678,18 @@
             this.panelNotes.Size = new System.Drawing.Size(503, 319);
             this.panelNotes.TabIndex = 37;
             // 
+            // buttonResetTransform
+            // 
+            this.buttonResetTransform.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonResetTransform.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.buttonResetTransform.Location = new System.Drawing.Point(352, 276);
+            this.buttonResetTransform.Name = "buttonResetTransform";
+            this.buttonResetTransform.Size = new System.Drawing.Size(146, 21);
+            this.buttonResetTransform.TabIndex = 39;
+            this.buttonResetTransform.Text = "Reset transformation";
+            this.buttonResetTransform.UseVisualStyleBackColor = true;
+            this.buttonResetTransform.Click += new System.EventHandler(this.buttonResetTransform_Click);
+            // 
             // panelInvRefNote
             // 
             this.panelInvRefNote.Controls.Add(this.comboboxInvNoteRef);
@@ -832,7 +845,6 @@
             this.comboboxScaleTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.comboboxScaleTo.Cursor = System.Windows.Forms.Cursors.Hand;
             this.comboboxScaleTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboboxScaleTo.Enabled = false;
             this.comboboxScaleTo.FormattingEnabled = true;
             this.comboboxScaleTo.Location = new System.Drawing.Point(240, 101);
             this.comboboxScaleTo.Name = "comboboxScaleTo";
@@ -1231,17 +1243,17 @@
             this.buttonSaveAll.UseVisualStyleBackColor = true;
             this.buttonSaveAll.Click += new System.EventHandler(this.buttonSaveAll_Click);
             // 
-            // buttonResetTransform
+            // buttonExport
             // 
-            this.buttonResetTransform.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonResetTransform.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.buttonResetTransform.Location = new System.Drawing.Point(352, 276);
-            this.buttonResetTransform.Name = "buttonResetTransform";
-            this.buttonResetTransform.Size = new System.Drawing.Size(146, 21);
-            this.buttonResetTransform.TabIndex = 39;
-            this.buttonResetTransform.Text = "Reset transformation";
-            this.buttonResetTransform.UseVisualStyleBackColor = true;
-            this.buttonResetTransform.Click += new System.EventHandler(this.buttonResetTransform_Click);
+            this.buttonExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonExport.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.buttonExport.Location = new System.Drawing.Point(518, 355);
+            this.buttonExport.Name = "buttonExport";
+            this.buttonExport.Size = new System.Drawing.Size(75, 23);
+            this.buttonExport.TabIndex = 39;
+            this.buttonExport.Text = "Export...";
+            this.buttonExport.UseVisualStyleBackColor = true;
+            this.buttonExport.Click += new System.EventHandler(this.buttonExport_Click);
             // 
             // Main
             // 
@@ -1249,6 +1261,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(844, 380);
+            this.Controls.Add(this.buttonExport);
             this.Controls.Add(this.buttonSaveAll);
             this.Controls.Add(this.panelNotes);
             this.Controls.Add(this.VisualizerPanel);
@@ -1409,5 +1422,6 @@
         private System.Windows.Forms.Label labelInvNoteRef;
         private System.Windows.Forms.Panel panelInvRefNote;
         private System.Windows.Forms.Button buttonResetTransform;
+        private System.Windows.Forms.Button buttonExport;
     }
 }

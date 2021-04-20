@@ -860,13 +860,15 @@
 		public static MidiSequence Merge(IEnumerable<MidiSequence> sequences)
 		{
 			var result = new MidiSequence();
-			var l = new List<MidiEvent>();
+
+			var eventsList = new List<MidiEvent>();
 			foreach(var seq in sequences)
-				l.AddRange(seq.AbsoluteEvents);
-			l.Sort(delegate (MidiEvent x, MidiEvent y) { return x.Position.CompareTo(y.Position); });
+				eventsList.AddRange(seq.AbsoluteEvents);
+			eventsList.Sort(delegate (MidiEvent x, MidiEvent y) { return x.Position.CompareTo(y.Position); });
+
 			int midiEnd = -1;
 			var last = 0;
-			foreach (var e in l)
+			foreach (var e in eventsList)
 			{
 				if(0xFF==e.Message.Status && -1==e.Message.PayloadLength)
 				{
@@ -883,8 +885,8 @@
 			}
 			if(-1<midiEnd) // if we found a midi end track, then add one back after all is done
 				result.Events.Add(new MidiEvent(Math.Max(0,midiEnd-last), new MidiMessageMetaEndOfTrack()));
-			
-			return result;
+
+            return result;
 		}
 
 		/// <summary>
@@ -896,13 +898,16 @@
 		/// <returns>A new MIDI sequence with the notes transposed</returns>
 		public MidiSequence Transpose(sbyte noteAdjust,bool wrap = false,bool noDrums=true)
 		{
-			var events = new List<MidiEvent>(Events.Count);
-			foreach(var ev in AbsoluteEvents)
+            //bool hasPitchedToQuarterTone = false;
+            //int index = 0;
+
+            var events = new List<MidiEvent>(Events.Count);
+            foreach (var ev in AbsoluteEvents)
 			{
-				int n;
+                int n;
 				switch(ev.Message.Status & 0xF0)
 				{
-					case 0x80:
+					case 0x80:  // note off
 						if (noDrums && 9 == ev.Message.Channel)
 							goto default;
 						var no = ev.Message as MidiMessageWord;
@@ -919,8 +924,9 @@
 						}
 						no = new MidiMessageNoteOff(unchecked((byte)n), no.Data2, no.Channel);
 						events.Add(new MidiEvent(ev.Position, no));
+
 						break;
-					case 0x90:
+					case 0x90:  // note on
 						if (noDrums && 9 == ev.Message.Channel)
 							goto default;
 						no = ev.Message as MidiMessageWord;
@@ -937,12 +943,63 @@
 						}
 						no = new MidiMessageNoteOn(unchecked((byte)n), no.Data2, no.Channel);
 						events.Add(new MidiEvent(ev.Position, no));
-						break;
+
+                        //// test: add quarter tones to specific notes
+                        //bool addQuarterTone = (n % 12 == 4 || n % 12 == 9);
+                        //if (addQuarterTone)
+                        //{
+                        //    if (hasPitchedToQuarterTone)
+                        //    {
+                        //        MidiMessageChannelPitch msgPitch = new MidiMessageChannelPitch(64, no.Channel);
+                        //        events.Add(new MidiEvent(ev.Position, msgPitch));
+                        //        hasPitchedToQuarterTone = false;
+                        //    }
+                        //    else
+                        //    {
+                        //        MidiMessageChannelPitch msgPitch = new MidiMessageChannelPitch(10821, no.Channel);
+                        //        events.Add(new MidiEvent(ev.Position, msgPitch));
+                        //        hasPitchedToQuarterTone = true;
+                        //    }
+                        //}
+						//
+                        //index++;
+
+                        break;
+
+                    //case 0xB0: // Control Change: remove if existing to add channel pitch
+                    //    MidiMessageCC msgCC = ev.Message as MidiMessageCC;
+                    //    //events.Add(ev.Clone());
+					//	  break;
+
 					default:
+
+						//// handle last pitched note
+                        //if (ev.Message.Status == 0xFF && hasPitchedToQuarterTone)
+                        //{
+                        //    MidiMessageChannelPitch msgPitch = new MidiMessageChannelPitch(64, 0);
+                        //    events.Add(new MidiEvent(ev.Position, msgPitch));
+                        //    hasPitchedToQuarterTone = false;
+                        //}
+
 						events.Add(ev.Clone());
-						break;
+
+                        //// add events to handle channel pitch changes: not always work
+                        //if (ev.Message.Status == 0xFF && ev.Message is MidiMessageMetaTempo)
+                        //{
+                        //    MidiMessageCC msgCC101 = new MidiMessageCC(101, 0, 0);
+                        //    events.Add(new MidiEvent(ev.Position, msgCC101));
+                        //
+                        //    MidiMessageCC msgCC100 = new MidiMessageCC(100, 0, 0);
+                        //    events.Add(new MidiEvent(ev.Position, msgCC100));
+                        //
+                        //    MidiMessageCC msgCC6 = new MidiMessageCC(6, 6, 0);
+                        //    events.Add(new MidiEvent(ev.Position, msgCC6));
+                        //}
+
+                        break;
 				}
 			}
+
 			var result = new MidiSequence();
 			var last = 0;
 			foreach(var ev in events)
@@ -953,14 +1010,12 @@
 			return result;
 		}
 
-		/// <summary>
+        /// <summary>
 		/// Transposes the notes in a sequence, optionally wrapping the note values
 		/// </summary>
 		/// <param name="table">The notes transformation table</param>
 		/// <param name="wrap">True if out of range notes are wrapped, false if they are to be clipped</param>
 		/// <param name="noDrums">True if drums are to be skipped, otherwise false</param>
-		/// <param name="invert">True if inversion mode, otherwise false</param>
-		/// <param name="noteInversionRef">Reference note for inversion mode</param>
 		/// <returns>A new MIDI sequence with the notes transposed</returns>
 		public MidiSequence Transform(int[] table, bool wrap = false, bool noDrums = true, bool invert = false, int noteInversionRef = 48)
         {
@@ -1397,10 +1452,11 @@
                 foreach (MidiEvent ev in AbsoluteEvents)
                 {
                     int note;
+                    byte status = (byte)(ev.Message.Status & 0xF0);
                     switch (ev.Message.Status & 0xF0)
                     {
-                        case 0x80:
-                        case 0x90:
+                        //case 0x80:  // note off
+                        case 0x90:  // note on
                             if (true/* no drums */ && 9 == ev.Message.Channel)
                                 goto default;
                             var no = ev.Message as MidiMessageWord;
@@ -1410,6 +1466,12 @@
                             notesFreq[note]++;
 
                             break;
+
+                        case 0xe0:  // channel pitch
+                            MidiMessageChannelPitch messagePitch = ev.Message as MidiMessageChannelPitch;
+                            //Console.WriteLine($"Pitch change {messagePitch.Pitch}");
+                            break;
+
                         default:
                             break;
                     }
