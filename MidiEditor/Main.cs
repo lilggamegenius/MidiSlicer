@@ -280,7 +280,8 @@ namespace MidiEditor
 				_file = null;
 				TrackList.Enabled = false;
 				buttonPreview.Enabled = false;
-				UnitsCombo.Enabled = false;
+                buttonExport.Enabled = false;
+                UnitsCombo.Enabled = false;
 				StartCombo.Enabled = false;
 				OffsetUpDown.Enabled = false;
 				LengthUpDown.Enabled = false;
@@ -333,7 +334,8 @@ namespace MidiEditor
                 TracksLabel.Text = string.Format(_tracksLabelFormat, sig.Numerator, sig.Denominator/*, key*/);
 				TrackList.Enabled = true;
 				buttonPreview.Enabled = true;
-				UnitsCombo.Enabled = true;
+                buttonExport.Enabled = true;
+                UnitsCombo.Enabled = true;
 				StartCombo.Enabled = true;
 				OffsetUpDown.Enabled = true;
 				LengthUpDown.Enabled = true;
