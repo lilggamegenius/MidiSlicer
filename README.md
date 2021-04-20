@@ -2,6 +2,7 @@
 
 Edit MIDI files to other scales, modes and harmonies to obtain new sonorities (more than 70 scales / modes included). Follow only these few steps:
  * Open a MIDI file,
+ * Choose the note(s) to change or
  * Choose the original tonic and scale (for instance C Major),
  * Choose the new destination tonic and scale (for instance C Natural Minor),
  * Click on _Save as_ to export the new MIDI file or  _Save all_ to export to multiple MIDI files with all scales with corresponding number of notes,
