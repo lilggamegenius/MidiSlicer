@@ -17,6 +17,7 @@ namespace MidiEditor
         string _tracksLabelFormat;
         bool _dirty;
         bool _reseekDirty;
+        bool _isPlaying;
 
         // notes transfomation
         Label[] labelNotes_;
@@ -40,7 +41,9 @@ namespace MidiEditor
 			_processedFile = null;
 			_dirty = true;
 			_reseekDirty = true;
-			_UpdateMidiFile();
+            _isPlaying = false;
+
+            _UpdateMidiFile();
 
             labelNotes_ = new Label[12];
             //labelNotesFrequency_ = new Label[12];
@@ -254,6 +257,8 @@ namespace MidiEditor
         {
             MidiFileBox.Text = filepath;
             _UpdateMidiFile();
+
+            _isPlaying = false;
         }
 
 		void _UpdateMidiFile()
@@ -397,7 +402,9 @@ namespace MidiEditor
 				buttonLoad.Enabled = true;
 				OutputComboBox.Enabled = true;
 				buttonPreview.Text = "Preview ♪";
-				return;
+                _isPlaying = false;
+
+                return;
 			}
 			
 			if (null != _play)
@@ -438,8 +445,10 @@ namespace MidiEditor
 			// start it
 			stm.Start();
 
-			// first set the timebase
-			stm.TimeBase = mf.TimeBase;
+            _isPlaying = true;
+
+            // first set the timebase
+            stm.TimeBase = mf.TimeBase;
 			// set up our send complete handler
 			stm.SendComplete += delegate (object s, EventArgs ea)
 			{
@@ -1249,6 +1258,9 @@ namespace MidiEditor
 
         private void Main_DragEnter(object sender, DragEventArgs e)
         {
+            if (_isPlaying)
+                return;
+
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (!MidiFile(files))
                 return;
@@ -1259,6 +1271,9 @@ namespace MidiEditor
 
         private void Main_DragDrop(object sender, DragEventArgs e)
         {
+            if (_isPlaying)
+                return;
+
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (!MidiFile(files))
                 return;
