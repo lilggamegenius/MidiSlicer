@@ -832,7 +832,7 @@
             this.comboboxScaleTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.comboboxScaleTo.Cursor = System.Windows.Forms.Cursors.Hand;
             this.comboboxScaleTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboboxScaleTo.Enabled = false;
+            this.comboboxScaleTo.Enabled = true;
             this.comboboxScaleTo.FormattingEnabled = true;
             this.comboboxScaleTo.Location = new System.Drawing.Point(240, 101);
             this.comboboxScaleTo.Name = "comboboxScaleTo";

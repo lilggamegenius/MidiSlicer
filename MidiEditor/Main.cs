@@ -120,6 +120,8 @@ namespace MidiEditor
                 comboboxScaleFrom.Items.Add(scale.Value);
             }
 
+            initComboboxScaleTo();
+
             for (int i = 0; i <= 10; i++)
                 comboboxInvNoteRefOctave.Items.Add(i);
 
@@ -309,7 +311,9 @@ namespace MidiEditor
 
                 Visualizer.Sequence = null;
 				Visualizer.Size = VisualizerPanel.Size;
-			}
+
+                resetTranformation();
+            }
 			else
 			{
 				MidiFileBox.ForeColor = SystemColors.WindowText;
@@ -376,12 +380,13 @@ namespace MidiEditor
 				Visualizer.Sequence = MidiSequence.Merge(_file.Tracks);
 				Visualizer.Width = Math.Max(VisualizerPanel.Width,Visualizer.Sequence.Length/4);
 
+                resetTranformation();
                 updateNotesFrequency();
 
                 comboboxInvNoteRefOctave.SelectedIndex = 4; // default
 			}
 
-            resetTranformation();
+            
             buttonResetTransform.Enabled = false;
         }
 
@@ -931,16 +936,10 @@ namespace MidiEditor
             comboboxTonicTo.SelectedIndex = maxFreqValue;
             comboboxInvNoteRef.SelectedIndex = maxFreqValue;
             updateGUI();
-
-            // TODO: try to guess scale
         }
 
         private void updateGUI()
         {
-            comboboxScaleTo.Enabled = (comboboxScaleFrom.SelectedIndex >= 0);
-            if (comboboxScaleFrom.SelectedIndex < 0)
-                comboboxScaleTo.SelectedIndex = -1;
-
             // get tonic value
             string tonicSrc = comboboxTonicFrom.Items[comboboxTonicFrom.SelectedIndex] as string;
             int tonicSrcValue = Notes.NotesValuesDict[tonicSrc];
@@ -956,7 +955,7 @@ namespace MidiEditor
             }
 
             // update inversion panel if inversion selected
-            if (comboboxScaleTo.Enabled && comboboxScaleTo.Items.Count > 0 && comboboxScaleTo.SelectedIndex >= 0)
+            if (comboboxScaleTo.Items.Count > 0 && comboboxScaleTo.SelectedIndex >= 0)
             {
                 string selectedScaleTo = comboboxScaleTo.Items[comboboxScaleTo.SelectedIndex] as string;
                 string selectedScaleToId = Scales.IdFromScaleName(selectedScaleTo);
@@ -965,6 +964,17 @@ namespace MidiEditor
             }
             else
                 panelInvRefNote.Enabled = false;
+        }
+
+        private void initComboboxScaleTo()
+        {
+            // set default transformation scales
+            if (comboboxScaleFrom.SelectedIndex < 0)
+            {
+                comboboxScaleTo.Items.Clear();
+                comboboxScaleTo.Items.Add("Negative Harmony");
+                comboboxScaleTo.Items.Add("Random");
+            }
         }
 
         private void updateComboboxScaleTo(int nbNotesInScale)
@@ -1083,28 +1093,33 @@ namespace MidiEditor
                 return;
             updateGUI();
 
-            if (comboboxScaleFrom.SelectedIndex < 0)
-                return;
+            if ((sender as ComboBox) == comboboxScaleFrom && comboboxScaleFrom.SelectedIndex < 0)
+                initComboboxScaleTo();
 
             // compute source scale notes values
 
             string tonicSrc = comboboxTonicFrom.Items[comboboxTonicFrom.SelectedIndex] as string;
             int tonicSrcValue = Notes.NotesValuesDict[tonicSrc];
 
-            string scaleSrcName = comboboxScaleFrom.Items[comboboxScaleFrom.SelectedIndex] as string;
-            string scaleSrcId = Scales.IdFromScaleName(scaleSrcName);
-            int[] scaleSrcValues = Scales.GetScaleValues(scaleSrcId);
-            int nbNotesInScale = scaleSrcValues.Length;
+            int[] scaleSrcNotesValues = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }; // all notes
+            int nbNotesInScale = 12;
+            if (comboboxScaleFrom.SelectedIndex >= 0)
+            {
+                string scaleSrcName = comboboxScaleFrom.Items[comboboxScaleFrom.SelectedIndex] as string;
+                string scaleSrcId = Scales.IdFromScaleName(scaleSrcName);
+                int[] scaleSrcValues = Scales.GetScaleValues(scaleSrcId);
+                nbNotesInScale = scaleSrcValues.Length;
 
-            // update combo box scale to with scales with same nb. notes
-            updateComboboxScaleTo(nbNotesInScale);
+                // update combo box scale to with scales with same nb. notes
+                updateComboboxScaleTo(nbNotesInScale);
 
-            int[] scaleSrcNotesValues = new int[nbNotesInScale];
-            for (int i = 0; i < nbNotesInScale; i++)
-                scaleSrcNotesValues[i] = (tonicSrcValue + scaleSrcValues[i]) % 12;
+                scaleSrcNotesValues = new int[nbNotesInScale];
+                for (int i = 0; i < nbNotesInScale; i++)
+                    scaleSrcNotesValues[i] = (tonicSrcValue + scaleSrcValues[i]) % 12;
 
-            // highlight scale notes
-            highlightScaleNotes(scaleSrcNotesValues);
+                // highlight scale notes
+                highlightScaleNotes(scaleSrcNotesValues);
+            }
 
             // new notes
 
