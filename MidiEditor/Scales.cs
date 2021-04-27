@@ -55,11 +55,9 @@ namespace MidiEditor
             //// 8 notes with quarter tones
             //{ "8bastanikar",   new float[]{ 0, 1.5, 3.5, 5, 6.5, 7.5, 10.5, 11.5} },
             //{ "8dalanshin",    new float[]{ 0, 1, 2, 3.5, 5, 7, 9, 10.5} },
-            //{ "8huzam",        new float[]{ 0, 1.5, 3.5, 4.5, 7.5, 8.5, 10.5, 11.5} },
             //{ "8jiharkah",     new float[]{ 0, 2, 4, 5, 7, 9, 10, 10.5} },
-            //{ "8mahur",        new float[]{ 0, 2, 3.5, 5, 7, 9, 10, 11} },
+            //{ "8kirdan",       new float[]{ 0, 2, 3, 3.5, 5, 7, 9, 10.5} },
             //{ "8mehayar",      new float[]{ 0, 1.5, 3, 5, 7, 8, 8.5, 10} },
-            //{ "8mustaar",      new float[]{ 0, 1.5, 2.5, 3.5, 5.5, 6.5, 8.5, 10.5} },
             //{ "8tet",          new float[]{ 0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5} },
             //
             //// 7 notes with quarter tones
@@ -67,6 +65,8 @@ namespace MidiEditor
             //{ "7rast",         new float[]{ 0, 2, 3.5, 5, 7, 9, 10.5} },
             //{ "7bayati",       new float[]{ 0, 1.5, 3, 5, 7, 8, 10} },
             //{ "7hardino",      new float[]{ 0, 1.5, 4, 5, 7, 8.5, 11} },
+            //{ "7mahur",        new float[]{ 0, 2, 3.5, 5, 7, 9, 11} },
+            //{ "7mustaar",      new float[]{ 0, 2.5, 3.5, 5.5, 6.5, 8.5, 10.5} },
             //{ "7sikah_baladi", new float[]{ 0, 1.5, 3.5, 5, 7, 8.5, 10.5} },
 
             // 5 notes with quarter tones
@@ -110,10 +110,10 @@ namespace MidiEditor
             { "7major_2harm,7,diff:7major_nat;7", "Locrian ♭♭3 ♭♭7 (7th mode)" },
 
             { "7major_harm,1,diff:7major_nat;1", "Harmonic major / Ionian ♭6" },
-            { "7major_harm,2,diff:7major_nat;2", "Dorian ♭5 (2nd mode)" },
+            { "7major_harm,2,diff:7major_nat;2", "Nahawand Murassa' / Dorian ♭5 (2nd mode)" },
             { "7major_harm,3,diff:7major_nat;3", "Phrygian ♭4 (3rd mode)" },
             { "7major_harm,4,diff:7major_nat;4", "Lydian ♭3 / Melodic minor #4 (4th mode)" },
-            { "7major_harm,5,diff:7major_nat;5", "Mixolydian ♭2 (5th mode)" },
+            { "7major_harm,5,diff:7major_nat;5", "Zanjaran / Mixolydian ♭2 (5th mode)" },
             { "7major_harm,6,diff:7major_nat;4", "Lydian augmented #2 (6th mode)" },
             { "7major_harm,7,diff:7major_nat;7", "Locrian ♭♭7 (7th mode)" },
 
@@ -191,20 +191,17 @@ namespace MidiEditor
             //////////////////////////// 8 NOTES ¼ TONES ////////////////////////
             //
             //{ "8jiharkah,1,diff:8bebop_dom;1", "Jiharkah" },
-            //{ "8jiharkah,2,diff:7major_nat;6", "Ushaq Misri (2nd mode)" },
-            //
             //{ "8bastanikar,1,diff:8bebop_dom;1", "Bastanikar" },
             //{ "8dalanshin,1", "Dalanshin" },
-            //{ "8huzam,1", "Huzam" },
-            //{ "8mahur,1,diff:8bebop_dom;1", "Mahur" },
+            //{ "8kirdan,1", "Kirdan" },
             //{ "8mehayar,1,diff:7major_nat;6", "Mehayar / Hoseni / Rahaw" },
-            //{ "8mustaar,1", "Mustaar" },
             //
             //////////////////////////// 7 NOTES ¼ TONES ////////////////////////
             //
             //{ "7hijaz,1,diff:7minor_harm;5", "Hijaz" },
             //{ "7hijaz,4,diff:7major_harm;1", "Suznak (4th mode)" },
             //{ "7hijaz,5,diff:7bayati;1", "Bayati Shuri (5th mode)" },
+            //{ "7hijaz,6", "Huzam (6th mode)" },
             //
             //{ "7rast,1,diff:7major_nat;2", "Rast" },
             //{ "7rast,5,diff:7major_nat;6", "Nayruz / Simdi Huseyni-Ussak (5th mode)" },
@@ -212,7 +209,11 @@ namespace MidiEditor
             //{ "7rast,7,diff:7major_nat;1", "Iraq (7th mode)" },
             //
             //{ "7bayati,1,diff:7major_nat;6", "Bayati" },
+            //{ "7bayati,4,diff:7major_nat;6", "Ushaq Masri (2nd mode)" },
+            //
             //{ "7hardino,1,diff:7major_nat;1", "Hardino" },
+            //{ "7mahur,1,diff:7major_nat;1", "Mahur" },
+            //{ "7mustaar,1", "Musta'ar" },
             //{ "7sikah_baladi,1,diff:7major_nat;1", "Sikah baladi / 7-TET (Approximation)" },
             //
             //{ "7sikah_baladi,6,diff:7major_nat;1", "Neutral" }
