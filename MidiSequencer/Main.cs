@@ -12,8 +12,9 @@ namespace MidiSequencer
 {
 	public partial class Main : Form
 	{
-		MidiInputDevice _midiInputDevice=null;
+		//MidiInputDevice _midiInputDevice=null;
 		MidiOutputDevice _midiOutputDevice=null;
+
 		public Main()
 		{
 			MinimumSize = new Size(200, 130);
