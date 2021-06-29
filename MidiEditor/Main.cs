@@ -1007,6 +1007,7 @@ namespace MidiEditor
             {
                 comboboxScaleTo.Items.Clear();
                 comboboxScaleTo.Items.Add("Negative Harmony");
+                comboboxScaleTo.Items.Add("Inversion");
                 comboboxScaleTo.Items.Add("Random");
             }
         }
