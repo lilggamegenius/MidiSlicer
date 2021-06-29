@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using M;
@@ -29,6 +30,9 @@ namespace MidiEditor
 		public Main(string[] args = null)
 		{
 			InitializeComponent();
+
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            this.Text = $"Midi Editor {version.Major}.{version.Minor}.{version.Build}";
 
             var devs = MidiDevice.Outputs;
 			OutputComboBox.DisplayMember = "Name";
@@ -1007,6 +1011,7 @@ namespace MidiEditor
             {
                 comboboxScaleTo.Items.Clear();
                 comboboxScaleTo.Items.Add("Negative Harmony");
+                comboboxScaleTo.Items.Add("Inversion");
                 comboboxScaleTo.Items.Add("Random");
             }
         }

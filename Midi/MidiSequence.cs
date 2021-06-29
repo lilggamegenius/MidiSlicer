@@ -1010,12 +1010,14 @@
 			return result;
 		}
 
-        /// <summary>
+		/// <summary>
 		/// Transposes the notes in a sequence, optionally wrapping the note values
 		/// </summary>
 		/// <param name="table">The notes transformation table</param>
 		/// <param name="wrap">True if out of range notes are wrapped, false if they are to be clipped</param>
 		/// <param name="noDrums">True if drums are to be skipped, otherwise false</param>
+		/// <param name="invert">True if inversion transformation, otherwise false</param>
+		/// <param name="noteInversionRef">Inversion reference note</param>
 		/// <returns>A new MIDI sequence with the notes transposed</returns>
 		public MidiSequence Transform(int[] table, bool wrap = false, bool noDrums = true, bool invert = false, int noteInversionRef = 48)
         {
