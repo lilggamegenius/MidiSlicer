@@ -67,11 +67,12 @@ namespace MidiEditor
             //{ "7hardino",      new float[]{ 0, 1.5, 4, 5, 7, 8.5, 11} },
             //{ "7mahur",        new float[]{ 0, 2, 3.5, 5, 7, 9, 11} },
             //{ "7mustaar",      new float[]{ 0, 2.5, 3.5, 5.5, 6.5, 8.5, 10.5} },
+            //{ "7saba",         new float[]{ 0, 1.5, 3, 4, 7, 8, 10} },
             //{ "7sikah_baladi", new float[]{ 0, 1.5, 3.5, 5, 7, 8.5, 10.5} },
 
             // 5 notes with quarter tones
             //{  "5tet_approx",  new float[]{ 0, 2.5, 5, 7, 9.5 } };
-    };
+        };
 
         public static Dictionary<string, string> ScalesValuesDict = new Dictionary<string, string>()
         {
