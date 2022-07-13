@@ -15,6 +15,7 @@ namespace MidiEditor
 		static void Main(string[] args)
 		{
 			Application.EnableVisualStyles();
+			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.Run(new Main(args));
 		}
 	}
